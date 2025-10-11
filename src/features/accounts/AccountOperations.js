@@ -7,7 +7,7 @@ function AccountOperations() {
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [loanAmount, setLoanAmount] = useState('');
   const [loanPurpose, setLoanPurpose] = useState('');
-  const [currency, setCurrency] = useState('');
+  const [currency, setCurrency] = useState('USD');
 
   const dispatch = useDispatch();
   const {
@@ -24,7 +24,7 @@ function AccountOperations() {
 
     dispatch(deposit(depositAmount, currency));
     setDepositAmount('');
-    setCurrency('');
+    setCurrency('USD');
   }
 
   function handleWithdrawal() {
