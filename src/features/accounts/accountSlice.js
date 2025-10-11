@@ -1,51 +1,55 @@
-const initialStateAccount = {
+import { createSlice } from '@reduxjs/toolkit';
+
+const ACCOUNT_DEPOSIT = 'account/deposit';
+// const ACCOUNT_WITHDRAW = 'account/withdraw';
+// const ACCOUNT_REQUESTLOAN = 'account/requestLoan';
+// const ACCOUNT_PAYLOAN = 'account/payLoan';
+
+const initialState = {
   balance: 0,
   loan: 0,
   loanPurpose: '',
   isLoading: false,
 };
 
-export default function accountReducer(state = initialStateAccount, action) {
-  switch (action.type) {
-    case 'account/deposit':
-      return {
-        ...state,
-        balance: state.balance + action.payload,
-        isLoading: false,
-      };
+const accountSlice = createSlice({
+  name: 'account',
+  initialState: initialState,
+  reducers: {
+    deposit(state, action) {
+      state.balance += action.payload;
+      state.isLoading = false;
+    },
+    withdraw(state, action) {
+      state.balance -= action.payload;
+    },
+    requestLoan: {
+      prepare(amount, purpose) {
+        return {
+          payload: { amount, purpose },
+        };
+      },
 
-    case 'account/withdraw':
-      return { ...state, balance: state.balance - action.payload };
+      reducer(state, action) {
+        if (state.loan > 0) return;
 
-    case 'account/requestLoan':
-      if (state.loan > 0) return state;
-      //LATER
-      return {
-        ...state,
-        loan: action.payload.amount,
-        loanPurpose: action.payload.purpose,
-        balance: state.balance + action.payload.amount,
-      };
+        state.loan = action.payload.amount;
+        state.loanPurpose = action.payload.purpose;
+        state.balance = state.balance + action.payload.amount;
+      },
+    },
+    payLoan(state) {
+      state.balance -= state.loan;
+      state.loan = 0;
+      state.loanPurpose = '';
+    },
+    convertingCurrency(state) {
+      state.isLoading = true;
+    },
+  },
+});
 
-    case 'account/payLoan':
-      return {
-        ...state,
-        loan: 0,
-        loanPurpose: '',
-        balance: state.balance - state.loan,
-      };
-    case 'account/convertingCurrency':
-      return { ...state, isLoading: true };
-
-    default:
-      return state;
-  }
-}
-
-const ACCOUNT_DEPOSIT = 'account/deposit';
-const ACCOUNT_WITHDRAW = 'account/withdraw';
-const ACCOUNT_REQUESTLOAN = 'account/requestLoan';
-const ACCOUNT_PAYLOAN = 'account/payLoan';
+export const { withdraw, requestLoan, payLoan } = accountSlice.actions;
 
 export function deposit(amount, currency) {
   if (currency === 'USD') return { type: ACCOUNT_DEPOSIT, payload: amount };
@@ -65,17 +69,79 @@ export function deposit(amount, currency) {
   };
 }
 
-export function withdraw(amount) {
-  return { type: ACCOUNT_WITHDRAW, payload: amount };
-}
+export default accountSlice.reducer;
 
-export function requestLoan(amount, purpose) {
-  return {
-    type: ACCOUNT_REQUESTLOAN,
-    payload: { amount, purpose },
-  };
-}
+// export default function accountReducer(state = initialStateAccount, action) {
+//   switch (action.type) {
+//     case 'account/deposit':
+//       return {
+//         ...state,
+//         balance: state.balance + action.payload,
+//         isLoading: false,
+//       };
 
-export function payLoan() {
-  return { type: ACCOUNT_PAYLOAN };
-}
+//     case 'account/withdraw':
+//       return { ...state, balance: state.balance - action.payload };
+
+//     case 'account/requestLoan':
+//       if (state.loan > 0) return state;
+//       //LATER
+//       return {
+//         ...state,
+//         loan: action.payload.amount,
+//         loanPurpose: action.payload.purpose,
+//         balance: state.balance + action.payload.amount,
+//       };
+
+//     case 'account/payLoan':
+//       return {
+//         ...state,
+//         loan: 0,
+//         loanPurpose: '',
+//         balance: state.balance - state.loan,
+//       };
+//     case 'account/convertingCurrency':
+//       return { ...state, isLoading: true };
+
+//     default:
+//       return state;
+//   }
+// }
+
+// const ACCOUNT_DEPOSIT = 'account/deposit';
+// const ACCOUNT_WITHDRAW = 'account/withdraw';
+// const ACCOUNT_REQUESTLOAN = 'account/requestLoan';
+// const ACCOUNT_PAYLOAN = 'account/payLoan';
+
+// export function deposit(amount, currency) {
+//   if (currency === 'USD') return { type: ACCOUNT_DEPOSIT, payload: amount };
+//   return async function (dispatch, getState) {
+//     dispatch({ type: 'account/convertingCurrency' });
+//     //API call
+
+//     const res = await fetch(
+//       `https://api.frankfurter.app/latest?amount=${amount}&from${currency}&toUSD`
+//     );
+//     const data = await res.json();
+//     console.log('data from converter: ', data);
+//     const converted = data.rates.USD;
+
+//     //Return action
+//     dispatch({ type: ACCOUNT_DEPOSIT, payload: converted });
+//   };
+// }
+
+// export function withdraw(amount) {
+//   return { type: ACCOUNT_WITHDRAW, payload: amount };
+// }
+
+// export function requestLoan(amount, purpose) {
+//   return {
+//     type: ACCOUNT_REQUESTLOAN,
+//     payload: { amount, purpose },
+//   };
+// }
+
+// export function payLoan() {
+//   return { type: ACCOUNT_PAYLOAN };
+// }
