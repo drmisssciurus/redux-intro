@@ -35,6 +35,7 @@ const customerSlice = createSlice({
 export const { createCustomer, updateName } = customerSlice.actions;
 
 export default customerSlice.reducer;
+// export default customerSlice.reducer;
 
 // export default function customerReducer(state = initialStateCustomer, action) {
 //   switch (action.type) {
